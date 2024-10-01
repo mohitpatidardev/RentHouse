@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const mongoose = require('mongoose');
 const Listing = require('./models/listing.js'); 
+const path = require('path');
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
@@ -19,33 +20,47 @@ async function main() {
     });
 }
 
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "view"));
+
+
 // Root route
 app.get("/", (req, res) => {
     res.send("Root working...");
 });
 
-// Testing route for adding a listing
-app.get("/testing", async (req, res) => {
+app.get("/listings", async (req, res) => {
     try {
-        // Hardcoded data for the listing
-        const newListing = new Listing({
-            title: "Luxury Villa",
-            description: "A beautiful luxury villa with 5 bedrooms, a pool, and a garden.",
-            price: 500000,
-            location: "Los Angeles",
-            country: "USA",
-        });
-
-        // Save the listing to the database
-        await newListing.save();
-
-        // Send success response
-        res.send("Success: Listing added");
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Error saving the data");
+        const alllistings = await Listing.find({});
+        res.render('listings/index', { alllistings });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error occurred while fetching listings.");
     }
-});
+});    
+
+// Testing route for adding a listing
+// app.get("/testing", async (req, res) => {
+//     try {
+//         // Hardcoded data for the listing
+//         const newListing = new Listing({
+//             title: "Luxury Villa",
+//             description: "A beautiful luxury villa with 5 bedrooms, a pool, and a garden.",
+//             price: 500000,
+//             location: "Los Angeles",
+//             country: "USA",
+//         });
+
+//         // Save the listing to the database
+//         await newListing.save();
+
+//         // Send success response
+//         res.send("Success: Listing added");
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).send("Error saving the data");
+//     }
+// });
 
 // Start the server on port 8080
 app.listen(8080, () => {
